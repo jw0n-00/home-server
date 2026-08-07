@@ -2,7 +2,6 @@
 
 Repurposed an old laptop into an always-on Debian server running a small stack of self-hosted services behind a hardened network setup: Docker, Portainer, Jellyfin, Pi-hole, Homepage, Tailscale, UFW, and Fail2Ban.
 
-> 📸 **Photo placeholders below** — drop your screenshots into a `screenshots/` folder in this repo using the exact filenames shown (e.g. `screenshots/01-asus-x550la-hardware.jpg`). Once the files exist at those paths, every image in this README will render automatically on GitHub.
 
 ![Server hardware](screenshots/01-asus-x550la-hardware.jpg)
 
