@@ -66,7 +66,7 @@ With no monitor attached day-to-day, the server needed a known address on the LA
 ip addr
 ```
 
-![ip addr showing the server's LAN address](screenshots/11-ip-addr-to-find%20ip%20for%20server.jpg)
+![ip addr showing the server's LAN address](screenshots/11-ip-addr-to-find-ip-for-server.jpg)
 
 From there, connected in over SSH from another PC on the same network:
 
