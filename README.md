@@ -155,6 +155,28 @@ e3dc57a80f21   pihole/pihole:latest                  "start.sh"               3 
 
 ![All four containers healthy in Portainer](screenshots/28-portainer-containers.png)
 
+Media Automation Pipeline
+
+Extended the stack with a set of containers that automate media library management end-to-end: a request goes in through a web front-end, gets picked up by a library manager, routed through an indexer aggregator, handled by an isolated download client, and lands in Jellyfin's library automatically — no manual file handling at any point.
+
+Services added:
+
+Service	Role
+Gluetun	VPN gateway container; isolates the download client's network traffic behind a WireGuard tunnel with an automatic kill switch
+qBittorrent	Download client; runs with no network of its own — all traffic is forced through Gluetun
+Prowlarr	Centralized indexer/source manager; syncs available sources to the library managers below instead of configuring each one separately
+Radarr / Sonarr / Lidarr	Library managers for movies, TV/anime, and music respectively — monitor for requests, coordinate acquisition, and rename/move finished files into the correct Jellyfin library folder
+Bazarr	Subtitle automation; watches the Radarr/Sonarr libraries and fetches matching subtitles
+FlareSolverr	Headless-browser proxy that resolves anti-bot/JS-challenge pages so Prowlarr can reach sources that require it
+Jellyseerr	Request front-end; lets a user search for a title and submit a request that flows automatically to Radarr/Sonarr without touching the backend tools directly
+
+Architecture decisions worth calling out:
+
+Network-scoped VPN isolation, not a blanket VPN. Rather than tunneling the whole server's traffic, only the download client's container network is routed through the VPN gateway (network_mode: "service:gluetun" in Compose) — every other service keeps its normal network path. This required understanding Docker's shared-network-namespace model: qBittorrent has no IP of its own on the Docker network, so every other container that needs to reach it addresses Gluetun's container name instead.
+Kill-switch by design. Gluetun tears down network access entirely if the VPN tunnel drops, rather than allowing the download client to silently fall back to a direct connection. Verified this by comparing the external IP reported from inside the Gluetun container against the download client's container — confirming they match, and that neither matches the server's real IP.
+Single indexer-management layer. Prowlarr centralizes source configuration and pushes it to every library manager via its Applications sync feature, instead of duplicating that configuration three times across Radarr/Sonarr/Lidarr.
+Path consistency across containers. All library managers and the download client mount the same host directories at matching container paths — the single most common failure point in a stack like this, since a library manager can't import a finished file it can't see under the path it expects.
+
 ## Troubleshooting Log
 
 Real problems hit during setup, and how each one was diagnosed and fixed instead of just reinstalling.
